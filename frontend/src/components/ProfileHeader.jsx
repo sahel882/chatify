@@ -13,16 +13,26 @@ function ProfileHeader() {
   const fileInputref = useRef(null);
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
 
     reader.onloadend = async () => {
-      const base64Image = reader.result
+      const base64Image = reader.result;
       setSelectedImg(base64Image);
-      await updateProfile({profilePic: base64Image});
+      await updateProfile({ profilePic: base64Image });
+    };
+  };
+
+  const handleToggleSound = () => {
+    toggleSound(); // ✅ update store first
+    try {
+      mouseClickSound.currentTime = 0;
+      mouseClickSound.play();
+    } catch (error) {
+      console.log("Audio play failed:", error);
     }
   };
 
@@ -69,11 +79,7 @@ function ProfileHeader() {
 
           <button
             className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={() => {
-              mouseClickSound.currentTime = 0;
-              mouseClickSound.play().catch((error) => console.log("Audio play failed:", error));
-              toggleSound();
-            }}
+            onClick={handleToggleSound}
           >
             {isSoundEnabled ? (
               <Volume2Icon className="size-5" />
