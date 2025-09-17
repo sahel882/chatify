@@ -6,31 +6,30 @@ import NoChatHistoryPlaceholder from "./NoChatHistoryPlaceholder";
 import MessageInput from "./MessageInput";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 
-
 function ChatContainer() {
-
   const {
     selectedUser,
     getMessagesByUserId,
     messages,
     isMessagesLoading,
+    subscribeToMessages,
+    unsubscribeFromMessages,
   } = useChatStore();
-
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    if (!selectedUser?._id) return;
-
     getMessagesByUserId(selectedUser._id);
-  }, [selectedUser, getMessagesByUserId]);
+    subscribeToMessages();
+
+    return () => unsubscribeFromMessages();
+  }, [selectedUser, getMessagesByUserId, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages])
-
+  }, [messages]);
 
   return (
     <>
@@ -38,9 +37,18 @@ function ChatContainer() {
       <div className="flex-1 px-6 overflow-y-auto py-8">
         {messages.length > 0 && !isMessagesLoading ? (
           <div className="max-w-3xl mx-auto space-y-6">
-            {messages.map(msg => (
-              <div key={msg._id} className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}>
-                <div className={`chat-bubble relative ${msg.senderId === authUser._id ? "bg-cyan-600 text-white" : "bg-slate-800 text-slate-200"}`}>
+            {messages.map((msg) => (
+              <div
+                key={msg._id}
+                className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+              >
+                <div
+                  className={`chat-bubble relative ${
+                    msg.senderId === authUser._id
+                      ? "bg-cyan-600 text-white"
+                      : "bg-slate-800 text-slate-200"
+                  }`}
+                >
                   {msg.image && (
                     <img src={msg.image} alt="Shared" className="rounded-lg h-48 object-cover" />
                   )}
@@ -56,13 +64,16 @@ function ChatContainer() {
             ))}
             <div ref={messageEndRef} />
           </div>
-        ) : isMessagesLoading ? <MessagesLoadingSkeleton /> : (
+        ) : isMessagesLoading ? (
+          <MessagesLoadingSkeleton />
+        ) : (
           <NoChatHistoryPlaceholder name={selectedUser.fullName} />
         )}
       </div>
+
       <MessageInput />
     </>
-  )
+  );
 }
 
-export default ChatContainer
+export default ChatContainer;

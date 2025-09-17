@@ -16,14 +16,16 @@ function MessageInput() {
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
+
     if (isSoundEnabled) playRandomKeyStrokeSound();
 
     sendMessage({
       text: text.trim(),
       image: imagePreview,
     });
+
     setText("");
-    setImagePreview("");
+    setImagePreview(null); // ✅ always null
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -40,7 +42,7 @@ function MessageInput() {
   };
 
   const removeImage = () => {
-    setImagePreview(null);
+    setImagePreview(null); // ✅ null, not ""
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -65,13 +67,16 @@ function MessageInput() {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex space-x-4">
+      <form
+        onSubmit={handleSendMessage}
+        className="max-w-3xl mx-auto flex space-x-4"
+      >
         <input
           type="text"
           value={text}
           onChange={(e) => {
             setText(e.target.value);
-            isSoundEnabled && playRandomKeyStrokeSound();
+            if (isSoundEnabled) playRandomKeyStrokeSound();
           }}
           className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-4"
           placeholder="Type your message..."
